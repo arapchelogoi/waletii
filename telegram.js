@@ -10,9 +10,6 @@ import config from './config.js';
 
 /**
  * Make a Telegram Bot API request.
- * @param {string} method  e.g. 'sendMessage'
- * @param {object} params
- * @returns {Promise<object>}
  */
 export async function tgRequest(method, params) {
   const url = `${config.tgApi}/${method}`;
@@ -37,14 +34,12 @@ export async function sendAdminMessage(text, keyboard) {
 }
 
 /**
- * Edit a message (remove buttons after admin clicks one).
+ * Remove buttons from a message while keeping the text intact.
  */
-export async function editMessage(chatId, messageId, text) {
-  return tgRequest('editMessageText', {
+export async function removeButtons(chatId, messageId) {
+  return tgRequest('editMessageReplyMarkup', {
     chat_id:      chatId,
     message_id:   messageId,
-    text,
-    parse_mode:   'MarkdownV2',
     reply_markup: JSON.stringify({ inline_keyboard: [] }),
   });
 }
